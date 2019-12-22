@@ -339,6 +339,10 @@
 	loadTrigger();
 	// #endregion
 
+	if ($devtool.enable !== true) {
+		return;
+	}
+
 	// #region Console
 	function consoleLog (args, color) {
 		var time = timeFormat();
@@ -399,335 +403,333 @@
 	// #endregion
 
 	// #region Network
-	if ($devtool.enable === true) {
-		var nativeXHR = XMLHttpRequest;
-		window['XMLHttpRequest'] = function () {
-			var devToolNetworkDOM = null;
-			var devToolNetworkStatusDOM = null;
-			var devToolNetworkMethodDOM = null;
-			var devToolNetworkUrlDOM = null;
+	var nativeXHR = XMLHttpRequest;
+	window['XMLHttpRequest'] = function () {
+		var devToolNetworkDOM = null;
+		var devToolNetworkStatusDOM = null;
+		var devToolNetworkMethodDOM = null;
+		var devToolNetworkUrlDOM = null;
 
-			var xhr = new nativeXHR(arguments);
+		var xhr = new nativeXHR(arguments);
 
-			var devToolXHR = {
-				startDt: new Date(),
-				endDt: new Date(),
-				method: 'GET',
-				url: '',
-				headers: {},
-				body: null,
-				onabort: function () {
+		var devToolXHR = {
+			startDt: new Date(),
+			endDt: new Date(),
+			method: 'GET',
+			url: '',
+			headers: {},
+			body: null,
+			onabort: function () {
+				devToolXHR.endDt = new Date();
+				if (devToolNetworkDOM === null) {
+					return;
+				}
+
+				devToolNetworkDOM.style.backgroundColor = '#ffbfbf';
+				devToolNetworkStatusDOM.innerText = 'Abort';
+			},
+			onreadystatechange: function () {
+				if (xhr.readyState == 4) {
 					devToolXHR.endDt = new Date();
-					if (devToolNetworkDOM === null) {
-						return;
-					}
-
-					devToolNetworkDOM.style.backgroundColor = '#ffbfbf';
-					devToolNetworkStatusDOM.innerText = 'Abort';
-				},
-				onreadystatechange: function () {
-					if (xhr.readyState == 4) {
-						devToolXHR.endDt = new Date();
-						if (devToolNetworkDOM !== null) {
-							if (xhr.status >= 300) {
-								devToolNetworkDOM.style.backgroundColor = '#ffbfbf';
-							}
-							devToolNetworkStatusDOM.innerText = xhr.status;
+					if (devToolNetworkDOM !== null) {
+						if (xhr.status >= 300) {
+							devToolNetworkDOM.style.backgroundColor = '#ffbfbf';
 						}
+						devToolNetworkStatusDOM.innerText = xhr.status;
 					}
-				},
-				ontimeout: function () {
-
-				},
-				onerror: function () {
-
-				},
-				onload: function () {
-
-				},
-				onloadend: function () {
-
-				},
-				onloadstart: function () {
-
-				},
-				onprogress: function () {
-
 				}
-			};
+			},
+			ontimeout: function () {
 
-			// #region Default Events
-			xhr.onabort = function () {
-				devToolXHR.onabort.apply(this, arguments);
-			};
-			xhr.onreadystatechange = function () {
-				devToolXHR.onreadystatechange.apply(this, arguments);
-			};
-			xhr.ontimeout = function () {
-				devToolXHR.ontimeout.apply(this, arguments);
-			};
-			xhr.onerror = function () {
-				devToolXHR.onerror.apply(this, arguments);
-			};
-			xhr.onload = function () {
-				devToolXHR.onload.apply(this, arguments);
-			};
-			xhr.onloadend = function () {
-				devToolXHR.onloadend.apply(this, arguments);
-			};
-			xhr.onloadstart = function () {
-				devToolXHR.onloadstart.apply(this, arguments);
-			};
-			xhr.onprogress = function () {
-				devToolXHR.onprogress.apply(this, arguments);
-			};
-			// #endregion
+			},
+			onerror: function () {
 
-			var result = {
-				// #region Events
-				get onabort () {
-					return xhr.onabort;
-				},
-				set onabort (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
+			},
+			onload: function () {
 
-					xhr.onabort = function () {
-						devToolXHR.onabort.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				get onreadystatechange () {
-					return xhr.onreadystatechange;
-				},
-				set onreadystatechange (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
+			},
+			onloadend: function () {
 
-					xhr.onreadystatechange = function () {
-						devToolXHR.onreadystatechange.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				get ontimeout () {
-					return xhr.ontimeout;
-				},
-				set ontimeout (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
+			},
+			onloadstart: function () {
 
-					xhr.ontimeout = function () {
-						devToolXHR.ontimeout.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				get onerror () {
-					return xhr.onerror;
-				},
-				set onerror (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
+			},
+			onprogress: function () {
 
-					xhr.onerror = function () {
-						devToolXHR.onerror.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				get onload () {
-					return xhr.onload;
-				},
-				set onload (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
-
-					xhr.onload = function () {
-						devToolXHR.onload.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				get onloadend () {
-					return xhr.onloadend;
-				},
-				set onloadend (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
-
-					xhr.onloadend = function () {
-						devToolXHR.onloadend.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				get onloadstart () {
-					return xhr.onloadstart;
-				},
-				set onloadstart (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
-
-					xhr.onloadstart = function () {
-						devToolXHR.onloadstart.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				get onprogress () {
-					return xhr.onprogress;
-				},
-				set onprogress (value) {
-					if (value === undefined || value === null) {
-						return;
-					}
-
-					xhr.onprogress = function () {
-						devToolXHR.onprogress.apply(this, arguments);
-						value.apply(this, arguments);
-					};
-				},
-				// #endregion
-				get readyState () {
-					return xhr.readyState;
-				},
-				get response () {
-					return xhr.response;
-				},
-				get responseText () {
-					return xhr.responseText;
-				},
-				get responseType () {
-					return xhr.responseType;
-				},
-				set responseType (value) {
-					xhr.responseType = value;
-				},
-				get responseURL () {
-					return xhr.responseURL;
-				},
-				get responseXML () {
-					return xhr.responseXML;
-				},
-				get status () {
-					return xhr.status;
-				},
-				get statusText () {
-					return xhr.statusText;
-				},
-				get timeout () {
-					return xhr.timeout;
-				},
-				set timeout (value) {
-					xhr.timeout = value;
-				},
-				get upload () {
-					return xhr.upload;
-				},
-				get withCredentials () {
-					return xhr.withCredentials;
-				},
-				set withCredentials (value) {
-					xhr.withCredentials = value;
-				},
-				// #region Methods
-				abort: function () {
-					return xhr.abort.apply(xhr, arguments);
-				},
-				getAllResponseHeaders: function () {
-					return xhr.getAllResponseHeaders.apply(xhr, arguments);
-				},
-				getResponseHeader: function () {
-					return xhr.getResponseHeader.apply(xhr, arguments);
-				},
-				open: function () {
-					if (arguments.length > 0) {
-						devToolXHR.method = arguments[0];
-					}
-					if (arguments.length > 1) {
-						devToolXHR.url = arguments[1];
-					}
-
-					return xhr.open.apply(xhr, arguments);
-				},
-				overrideMimeType: function () {
-					return xhr.overrideMimeType.apply(xhr, arguments);
-				},
-				send: function () {
-					if (arguments.length > 0) {
-						if (arguments[0].constructor.name === 'FormData') {
-							var object = {};
-							arguments[0].forEach(function (value, key) {
-								object[key] = value;
-							});
-							devToolXHR.body = object;
-						} else {
-							devToolXHR.body = arguments[0];
-						}
-					}
-
-					// #region Create Network DOM
-					var networkHTML = '';
-					networkHTML += '<div class="dmuka3-dev-tool-network-item" style="width:100%;font-size:2vh;box-sizing:border-box;padding-left:1vh;border-bottom:1px solid #ccc;display:flex;">';
-					networkHTML += '	<div class="dmuka3-dev-tool-network-item-status" style="text-align:center;display:inline-block;line-height:3vh;width:10vh;border-right:1px dashed #ccc;">Pending</div>';
-					networkHTML += '	<div class="dmuka3-dev-tool-network-item-method" style="text-align:center;display:inline-block;line-height:3vh;width:10vh;border-right:1px dashed #ccc;"></div>';
-					networkHTML += '	<div class="dmuka3-dev-tool-network-item-url" style="display:inline-block;line-height:3vh;margin:0px;width:calc(100% - 22vh);overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;padding-left:1vh;"></div>';
-					networkHTML += '</div>';
-
-					var virtualDOM = document.createElement('div');
-					virtualDOM.innerHTML = networkHTML;
-
-					devToolNetworkDOM = virtualDOM.childNodes[0];
-					devToolNetworkStatusDOM = devToolNetworkDOM.querySelector('.dmuka3-dev-tool-network-item-status');
-					devToolNetworkMethodDOM = devToolNetworkDOM.querySelector('.dmuka3-dev-tool-network-item-method');
-					devToolNetworkUrlDOM = devToolNetworkDOM.querySelector('.dmuka3-dev-tool-network-item-url');
-
-					devToolNetworkMethodDOM.innerText = devToolXHR.method;
-					devToolNetworkUrlDOM.innerText = devToolXHR.url;
-
-					devToolTabsNetworkContent.appendChild(devToolNetworkDOM);
-					if (devToolTabsNetworkContent.scrollHeight - devToolTabsNetworkContent.offsetHeight - devToolTabsNetworkContent.scrollTop <= 100) {
-						devToolTabsNetworkContent.scrollTop = devToolTabsNetworkContent.scrollHeight - devToolTabsNetworkContent.offsetHeight;
-					}
-
-					devToolNetworkDOM.addEventListener('click', function (e) {
-						devToolTabsNetworkContentDetail.style.display = 'block';
-						devToolTabsNetworkContentDetailStartDt.innerText = timeFormat(devToolXHR.startDt);
-						devToolTabsNetworkContentDetailEndDt.innerText = timeFormat(devToolXHR.endDt);
-						devToolTabsNetworkContentDetailDiffDt.innerText = (devToolXHR.endDt - devToolXHR.startDt) + ' ms';
-						devToolTabsNetworkContentDetailUrl.innerText = devToolXHR.url;
-						devToolTabsNetworkContentDetailMethod.innerText = devToolXHR.method;
-						devToolTabsNetworkContentDetailStatusCode.innerHTML = devToolNetworkStatusDOM.innerHTML;
-						devToolTabsNetworkContentDetailOtherHeaders.innerText = JSON.stringify(devToolXHR.headers, null, 4);
-						devToolTabsNetworkContentDetailBody.innerText = JSON.stringify(devToolXHR.body, null, 4);
-						try {
-							devToolTabsNetworkContentDetailResponse.innerText = JSON.stringify(JSON.parse(xhr.response), null, 4);
-						} catch (error) {
-							devToolTabsNetworkContentDetailResponse.innerText = xhr.response;
-						}
-					});
-					devToolXHR.startDt = new Date();
-					// #endregion
-
-					return xhr.send.apply(xhr, arguments);
-				},
-				setRequestHeader: function () {
-					if (arguments.length > 1) {
-						devToolXHR.headers[arguments[0]] = arguments[1];
-					}
-					return xhr.setRequestHeader.apply(xhr, arguments);
-				}
-				// #endregion
-			};
-
-			result.constructor = {
-				name: 'XMLHttpRequest'
-			};
-
-			return result;
+			}
 		};
-	}
+
+		// #region Default Events
+		xhr.onabort = function () {
+			devToolXHR.onabort.apply(this, arguments);
+		};
+		xhr.onreadystatechange = function () {
+			devToolXHR.onreadystatechange.apply(this, arguments);
+		};
+		xhr.ontimeout = function () {
+			devToolXHR.ontimeout.apply(this, arguments);
+		};
+		xhr.onerror = function () {
+			devToolXHR.onerror.apply(this, arguments);
+		};
+		xhr.onload = function () {
+			devToolXHR.onload.apply(this, arguments);
+		};
+		xhr.onloadend = function () {
+			devToolXHR.onloadend.apply(this, arguments);
+		};
+		xhr.onloadstart = function () {
+			devToolXHR.onloadstart.apply(this, arguments);
+		};
+		xhr.onprogress = function () {
+			devToolXHR.onprogress.apply(this, arguments);
+		};
+		// #endregion
+
+		var result = {
+			// #region Events
+			get onabort () {
+				return xhr.onabort;
+			},
+			set onabort (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.onabort = function () {
+					devToolXHR.onabort.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			get onreadystatechange () {
+				return xhr.onreadystatechange;
+			},
+			set onreadystatechange (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.onreadystatechange = function () {
+					devToolXHR.onreadystatechange.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			get ontimeout () {
+				return xhr.ontimeout;
+			},
+			set ontimeout (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.ontimeout = function () {
+					devToolXHR.ontimeout.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			get onerror () {
+				return xhr.onerror;
+			},
+			set onerror (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.onerror = function () {
+					devToolXHR.onerror.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			get onload () {
+				return xhr.onload;
+			},
+			set onload (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.onload = function () {
+					devToolXHR.onload.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			get onloadend () {
+				return xhr.onloadend;
+			},
+			set onloadend (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.onloadend = function () {
+					devToolXHR.onloadend.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			get onloadstart () {
+				return xhr.onloadstart;
+			},
+			set onloadstart (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.onloadstart = function () {
+					devToolXHR.onloadstart.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			get onprogress () {
+				return xhr.onprogress;
+			},
+			set onprogress (value) {
+				if (value === undefined || value === null) {
+					return;
+				}
+
+				xhr.onprogress = function () {
+					devToolXHR.onprogress.apply(this, arguments);
+					value.apply(this, arguments);
+				};
+			},
+			// #endregion
+			get readyState () {
+				return xhr.readyState;
+			},
+			get response () {
+				return xhr.response;
+			},
+			get responseText () {
+				return xhr.responseText;
+			},
+			get responseType () {
+				return xhr.responseType;
+			},
+			set responseType (value) {
+				xhr.responseType = value;
+			},
+			get responseURL () {
+				return xhr.responseURL;
+			},
+			get responseXML () {
+				return xhr.responseXML;
+			},
+			get status () {
+				return xhr.status;
+			},
+			get statusText () {
+				return xhr.statusText;
+			},
+			get timeout () {
+				return xhr.timeout;
+			},
+			set timeout (value) {
+				xhr.timeout = value;
+			},
+			get upload () {
+				return xhr.upload;
+			},
+			get withCredentials () {
+				return xhr.withCredentials;
+			},
+			set withCredentials (value) {
+				xhr.withCredentials = value;
+			},
+			// #region Methods
+			abort: function () {
+				return xhr.abort.apply(xhr, arguments);
+			},
+			getAllResponseHeaders: function () {
+				return xhr.getAllResponseHeaders.apply(xhr, arguments);
+			},
+			getResponseHeader: function () {
+				return xhr.getResponseHeader.apply(xhr, arguments);
+			},
+			open: function () {
+				if (arguments.length > 0) {
+					devToolXHR.method = arguments[0];
+				}
+				if (arguments.length > 1) {
+					devToolXHR.url = arguments[1];
+				}
+
+				return xhr.open.apply(xhr, arguments);
+			},
+			overrideMimeType: function () {
+				return xhr.overrideMimeType.apply(xhr, arguments);
+			},
+			send: function () {
+				if (arguments.length > 0) {
+					if (arguments[0].constructor.name === 'FormData') {
+						var object = {};
+						arguments[0].forEach(function (value, key) {
+							object[key] = value;
+						});
+						devToolXHR.body = object;
+					} else {
+						devToolXHR.body = arguments[0];
+					}
+				}
+
+				// #region Create Network DOM
+				var networkHTML = '';
+				networkHTML += '<div class="dmuka3-dev-tool-network-item" style="width:100%;font-size:2vh;box-sizing:border-box;padding-left:1vh;border-bottom:1px solid #ccc;display:flex;">';
+				networkHTML += '	<div class="dmuka3-dev-tool-network-item-status" style="text-align:center;display:inline-block;line-height:3vh;width:10vh;border-right:1px dashed #ccc;">Pending</div>';
+				networkHTML += '	<div class="dmuka3-dev-tool-network-item-method" style="text-align:center;display:inline-block;line-height:3vh;width:10vh;border-right:1px dashed #ccc;"></div>';
+				networkHTML += '	<div class="dmuka3-dev-tool-network-item-url" style="display:inline-block;line-height:3vh;margin:0px;width:calc(100% - 22vh);overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;padding-left:1vh;"></div>';
+				networkHTML += '</div>';
+
+				var virtualDOM = document.createElement('div');
+				virtualDOM.innerHTML = networkHTML;
+
+				devToolNetworkDOM = virtualDOM.childNodes[0];
+				devToolNetworkStatusDOM = devToolNetworkDOM.querySelector('.dmuka3-dev-tool-network-item-status');
+				devToolNetworkMethodDOM = devToolNetworkDOM.querySelector('.dmuka3-dev-tool-network-item-method');
+				devToolNetworkUrlDOM = devToolNetworkDOM.querySelector('.dmuka3-dev-tool-network-item-url');
+
+				devToolNetworkMethodDOM.innerText = devToolXHR.method;
+				devToolNetworkUrlDOM.innerText = devToolXHR.url;
+
+				devToolTabsNetworkContent.appendChild(devToolNetworkDOM);
+				if (devToolTabsNetworkContent.scrollHeight - devToolTabsNetworkContent.offsetHeight - devToolTabsNetworkContent.scrollTop <= 100) {
+					devToolTabsNetworkContent.scrollTop = devToolTabsNetworkContent.scrollHeight - devToolTabsNetworkContent.offsetHeight;
+				}
+
+				devToolNetworkDOM.addEventListener('click', function (e) {
+					devToolTabsNetworkContentDetail.style.display = 'block';
+					devToolTabsNetworkContentDetailStartDt.innerText = timeFormat(devToolXHR.startDt);
+					devToolTabsNetworkContentDetailEndDt.innerText = timeFormat(devToolXHR.endDt);
+					devToolTabsNetworkContentDetailDiffDt.innerText = (devToolXHR.endDt - devToolXHR.startDt) + ' ms';
+					devToolTabsNetworkContentDetailUrl.innerText = devToolXHR.url;
+					devToolTabsNetworkContentDetailMethod.innerText = devToolXHR.method;
+					devToolTabsNetworkContentDetailStatusCode.innerHTML = devToolNetworkStatusDOM.innerHTML;
+					devToolTabsNetworkContentDetailOtherHeaders.innerText = JSON.stringify(devToolXHR.headers, null, 4);
+					devToolTabsNetworkContentDetailBody.innerText = JSON.stringify(devToolXHR.body, null, 4);
+					try {
+						devToolTabsNetworkContentDetailResponse.innerText = JSON.stringify(JSON.parse(xhr.response), null, 4);
+					} catch (error) {
+						devToolTabsNetworkContentDetailResponse.innerText = xhr.response;
+					}
+				});
+				devToolXHR.startDt = new Date();
+				// #endregion
+
+				return xhr.send.apply(xhr, arguments);
+			},
+			setRequestHeader: function () {
+				if (arguments.length > 1) {
+					devToolXHR.headers[arguments[0]] = arguments[1];
+				}
+				return xhr.setRequestHeader.apply(xhr, arguments);
+			}
+			// #endregion
+		};
+
+		result.constructor = {
+			name: 'XMLHttpRequest'
+		};
+
+		return result;
+	};
 	// #endregion
 })();
