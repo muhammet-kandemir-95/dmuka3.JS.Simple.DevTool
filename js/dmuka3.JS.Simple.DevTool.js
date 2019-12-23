@@ -2,7 +2,7 @@
 	// #region Dev Tool
 	// #region Dev Tool DOM
 	var devToolHTML = '';
-	devToolHTML += '<div class="dmuka3-dev-tool" style="position:fixed;left:0px;top:0px;width:100%;height:100%;z-index:99999999999999;background-color:rgba(0,0,0,0.8);font-family:arial;display:none;">';
+	devToolHTML += '<div class="dmuka3-dev-tool" style="position:fixed;left:0px;top:0px;width:100%;height:100%;z-index:99999999999999;background-color:rgba(0,0,0,0.8);font-family:arial;display:none;display:block;">';
 	devToolHTML += '	<div class="dmuka3-dev-tool-header" style="width:100%;height:5vh;box-sizing:border-box;border-bottom:1px solid #fff;">';
 	devToolHTML += '		<div class="dmuka3-dev-tool-header-title" style="overflow:hidden;width:calc(100% - 25vh);height:100%;box-sizing:border-box;float:left;padding-left:2vw;line-height:5vh;font-size:2.3vh;color:#fff;">';
 	devToolHTML += '			dmuka3.JS.Simple.DevTool';
@@ -44,7 +44,7 @@
 	devToolHTML += '			<div class="dmuka3-dev-tool-tabs-content" data-tab="log" style="box-sizing:border-box;border-top: 1px solid #000;width:100%;height:calc(100% - 4vh);overflow:auto;-webkit-overflow-scrolling: touch;">';
 	devToolHTML += '			</div>';
 	devToolHTML += '			<div class="dmuka3-dev-tool-tabs-content" data-tab="network" style="box-sizing:border-box;border-top: 1px solid #000;width:100%;height:calc(100% - 4vh);overflow:auto;-webkit-overflow-scrolling: touch;display:none;position:relative;">';
-	devToolHTML += '				<div class="dmuka3-dev-tool-tabs-content-detail" style="display:none;position:absolute;left:0px;top:0px;width:100%;height:100%;background-color:#f0f8ff;box-sizing:border-box;padding-left:2vh;padding-right:2vh;overflow:auto;-webkit-overflow-scrolling: touch;">';
+	devToolHTML += '				<div class="dmuka3-dev-tool-tabs-content-detail" style="display:none;position:fixed;left:0px;top:0px;width:100%;height:100%;background-color:#f0f8ff;box-sizing:border-box;padding-left:2vh;padding-right:2vh;overflow:auto;-webkit-overflow-scrolling: touch;">';
 	devToolHTML += '					<div class="dmuka3-dev-tool-tabs-content-detail-close" style="position:absolute;right:0px;top:0px;text-align:center;width:5vh;height:auto;line-height:5vh;font-size:3vh;color:#000;cursor:pointer;">';
 	devToolHTML += '						&times;';
 	devToolHTML += '					</div>';
@@ -130,6 +130,16 @@
 	var devToolTabsNetworkContentDetailResponse = devToolTabsNetworkContentDetail.querySelector('.dmuka3-dev-tool-tabs-content-detail-response');
 	var devToolTabsNetworkContentDetailClose = devToolTabsNetworkContentDetail.querySelector('.dmuka3-dev-tool-tabs-content-detail-close');
 	// #endregion
+
+	function dataFormat(data) {
+		if (data === null || data === undefined) {
+			return JSON.stringify(data);
+		} else if (typeof data === 'string') {
+			return data;
+		} else {
+			return JSON.stringify(data, null, 4);
+		}
+	}
 
 	function timeFormat (date) {
 		date = date || new Date();
@@ -231,6 +241,8 @@
 		function openDevTool () {
 			setTimeout(function () {
 				devToolParentDOM.style.display = 'block';
+				devToolTabsNetworkContent.scrollTop = devToolTabsNetworkContent.scrollHeight - devToolTabsNetworkContent.offsetHeight;
+				devToolTabsLogContent.scrollTop = devToolTabsLogContent.scrollHeight - devToolTabsLogContent.offsetHeight;	
 			}, 1000);
 		}
 
@@ -361,7 +373,7 @@
 		var logDOM = virtualDOM.childNodes[0];
 		var logDataDOM = logDOM.querySelector('.dmuka3-dev-tool-log-item-data');
 		if (args.length === 1) {
-			logDataDOM.innerText = JSON.stringify(args[0], null, 4);
+			logDataDOM.innerText = dataFormat(args[0]);
 		} else if (args.length === 2) {
 			var msgDOM = document.createElement('b');
 			msgDOM.innerText = args[0];
@@ -369,7 +381,7 @@
 
 			logDataDOM.innerHTML += '&nbsp;=&nbsp;';
 
-			virtualDOM.innerText = JSON.stringify(args[1], null, 4);
+			virtualDOM.innerText = dataFormat(args[1]);
 			logDataDOM.innerHTML += '<i>' + virtualDOM.innerHTML + '</i>';
 		}
 		logDataDOM.style.color = $devtool.colors[color];
@@ -417,7 +429,6 @@
 			endDt: new Date(),
 			method: 'GET',
 			url: '',
-			headers: {},
 			body: null,
 			onabort: function () {
 				devToolXHR.endDt = new Date();
@@ -703,7 +714,12 @@
 					devToolTabsNetworkContentDetailUrl.innerText = devToolXHR.url;
 					devToolTabsNetworkContentDetailMethod.innerText = devToolXHR.method;
 					devToolTabsNetworkContentDetailStatusCode.innerHTML = devToolNetworkStatusDOM.innerHTML;
-					devToolTabsNetworkContentDetailOtherHeaders.innerText = JSON.stringify(devToolXHR.headers, null, 4);
+					devToolTabsNetworkContentDetailOtherHeaders.innerText = '';
+					var headers = xhr.getAllResponseHeaders().split('\n');
+					for (var i = 0; i < headers.length; i++) {
+						var header = headers[i];
+						devToolTabsNetworkContentDetailOtherHeaders.innerText += header + '\n';
+					}
 					devToolTabsNetworkContentDetailBody.innerText = JSON.stringify(devToolXHR.body, null, 4);
 					try {
 						devToolTabsNetworkContentDetailResponse.innerText = JSON.stringify(JSON.parse(xhr.response), null, 4);
@@ -717,9 +733,6 @@
 				return xhr.send.apply(xhr, arguments);
 			},
 			setRequestHeader: function () {
-				if (arguments.length > 1) {
-					devToolXHR.headers[arguments[0]] = arguments[1];
-				}
 				return xhr.setRequestHeader.apply(xhr, arguments);
 			}
 			// #endregion
