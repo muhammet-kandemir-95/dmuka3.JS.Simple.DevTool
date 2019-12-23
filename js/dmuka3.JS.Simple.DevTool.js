@@ -671,7 +671,7 @@
 			},
 			send: function () {
 				if (arguments.length > 0) {
-					if (arguments[0].constructor.name === 'FormData') {
+					if (arguments[0] !== null && arguments[0] !== undefined && arguments[0].constructor.name === 'FormData') {
 						var object = {};
 						arguments[0].forEach(function (value, key) {
 							object[key] = value;
