@@ -2,7 +2,7 @@
 	// #region Dev Tool
 	// #region Dev Tool DOM
 	var devToolHTML = '';
-	devToolHTML += '<div class="dmuka3-dev-tool" style="position:fixed;left:0px;top:0px;width:100%;height:100%;z-index:99999999999999;background-color:rgba(0,0,0,0.8);font-family:arial;display:none;display:block;">';
+	devToolHTML += '<div class="dmuka3-dev-tool" style="position:fixed;left:0px;top:0px;width:100%;height:100%;z-index:99999999999999;background-color:rgba(0,0,0,0.8);font-family:arial;display:none;">';
 	devToolHTML += '	<div class="dmuka3-dev-tool-header" style="width:100%;height:5vh;box-sizing:border-box;border-bottom:1px solid #fff;">';
 	devToolHTML += '		<div class="dmuka3-dev-tool-header-title" style="overflow:hidden;width:calc(100% - 25vh);height:100%;box-sizing:border-box;float:left;padding-left:2vw;line-height:5vh;font-size:2.3vh;color:#fff;">';
 	devToolHTML += '			dmuka3.JS.Simple.DevTool';
@@ -99,10 +99,13 @@
 	devToolHTML += '</div>';
 
 	var virtualDOM = document.createElement('div');
-	virtualDOM.innerHTML = devToolHTML;
+	virtualDOM.innerHTML = '<div></div>';
+	var shadowParent = virtualDOM.childNodes[0];
+	document.body.appendChild(shadowParent);
+	shadowParent.attachShadow({ mode: 'open' });
+	shadowParent.shadowRoot.innerHTML = devToolHTML;
 
-	var devToolParentDOM = virtualDOM.childNodes[0];
-	document.body.appendChild(devToolParentDOM);
+	var devToolParentDOM = shadowParent.shadowRoot.childNodes[0];
 
 	var devToolHeaderState = devToolParentDOM.querySelector('.dmuka3-dev-tool-header-state');
 	var devToolHeaderClose = devToolParentDOM.querySelector('.dmuka3-dev-tool-header-close');
@@ -131,7 +134,7 @@
 	var devToolTabsNetworkContentDetailClose = devToolTabsNetworkContentDetail.querySelector('.dmuka3-dev-tool-tabs-content-detail-close');
 	// #endregion
 
-	function dataFormat(data) {
+	function dataFormat (data) {
 		if (data === null || data === undefined) {
 			return JSON.stringify(data);
 		} else if (typeof data === 'string') {
@@ -194,43 +197,7 @@
 				}
 			},
 			clickProgresses: [function (e) {
-				// LEFT TOP
-				if (e.pageX < window.innerWidth / 4 && e.pageY < window.innerHeight / 4) {
-					return true;
-				}
-			}, function (e) {
-				// RIGHT TOP
-				if (e.pageX > window.innerWidth / 4 && e.pageY < window.innerHeight / 4) {
-					return true;
-				}
-			}, function (e) {
-				// RIGHT BOTTOM
-				if (e.pageX > window.innerWidth / 4 && e.pageY > window.innerHeight / 4) {
-					return true;
-				}
-			}, function (e) {
-				// LEFT BOTTOM
-				if (e.pageX < window.innerWidth / 4 && e.pageY > window.innerHeight / 4) {
-					return true;
-				}
-			}, function (e) {
-				// LEFT BOTTOM
-				if (e.pageX < window.innerWidth / 4 && e.pageY > window.innerHeight / 4) {
-					return true;
-				}
-			}, function (e) {
-				// RIGHT BOTTOM
-				if (e.pageX > window.innerWidth / 4 && e.pageY > window.innerHeight / 4) {
-					return true;
-				}
-			}, function (e) {
-				// RIGHT TOP
-				if (e.pageX > window.innerWidth / 4 && e.pageY < window.innerHeight / 4) {
-					return true;
-				}
-			}, function (e) {
-				// LEFT TOP
-				if (e.pageX < window.innerWidth / 4 && e.pageY < window.innerHeight / 4) {
+				if (e.touches !== null && e.touches !== undefined && e.touches.length >= 3) {
 					return true;
 				}
 			}]
@@ -242,7 +209,7 @@
 			setTimeout(function () {
 				devToolParentDOM.style.display = 'block';
 				devToolTabsNetworkContent.scrollTop = devToolTabsNetworkContent.scrollHeight - devToolTabsNetworkContent.offsetHeight;
-				devToolTabsLogContent.scrollTop = devToolTabsLogContent.scrollHeight - devToolTabsLogContent.offsetHeight;	
+				devToolTabsLogContent.scrollTop = devToolTabsLogContent.scrollHeight - devToolTabsLogContent.offsetHeight;
 			}, 1000);
 		}
 
@@ -429,6 +396,7 @@
 			endDt: new Date(),
 			method: 'GET',
 			url: '',
+			actualUrl: '',
 			body: null,
 			onabort: function () {
 				devToolXHR.endDt = new Date();
@@ -661,7 +629,18 @@
 					devToolXHR.method = arguments[0];
 				}
 				if (arguments.length > 1) {
-					devToolXHR.url = arguments[1];
+					devToolXHR.actualUrl = arguments[1] === null || arguments[1] === undefined ? '' : arguments[1];
+					devToolXHR.url = devToolXHR.actualUrl;
+
+					if (devToolXHR.url.indexOf('http://') === 0 || devToolXHR.url.indexOf('https://') === 0) {
+						devToolXHR.url = devToolXHR.url.split('//')[1];
+					}
+
+					var splitUrl = devToolXHR.url.split('/');
+					if (splitUrl.length > 1) {
+						splitUrl.splice(0, 1);
+					}
+					devToolXHR.url = splitUrl.join('/');
 				}
 
 				return xhr.open.apply(xhr, arguments);
@@ -711,7 +690,7 @@
 					devToolTabsNetworkContentDetailStartDt.innerText = timeFormat(devToolXHR.startDt);
 					devToolTabsNetworkContentDetailEndDt.innerText = timeFormat(devToolXHR.endDt);
 					devToolTabsNetworkContentDetailDiffDt.innerText = (devToolXHR.endDt - devToolXHR.startDt) + ' ms';
-					devToolTabsNetworkContentDetailUrl.innerText = devToolXHR.url;
+					devToolTabsNetworkContentDetailUrl.innerText = devToolXHR.actualUrl;
 					devToolTabsNetworkContentDetailMethod.innerText = devToolXHR.method;
 					devToolTabsNetworkContentDetailStatusCode.innerHTML = devToolNetworkStatusDOM.innerHTML;
 					devToolTabsNetworkContentDetailOtherHeaders.innerText = '';
@@ -720,7 +699,7 @@
 						var header = headers[i];
 						devToolTabsNetworkContentDetailOtherHeaders.innerText += header + '\n';
 					}
-					devToolTabsNetworkContentDetailBody.innerText = JSON.stringify(devToolXHR.body, null, 4);
+					devToolTabsNetworkContentDetailBody.innerText = dataFormat(devToolXHR.body);
 					try {
 						devToolTabsNetworkContentDetailResponse.innerText = JSON.stringify(JSON.parse(xhr.response), null, 4);
 					} catch (error) {
