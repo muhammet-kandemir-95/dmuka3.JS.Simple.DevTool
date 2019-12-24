@@ -216,6 +216,7 @@
 		// #region DOM Load
 		devToolTabsNetworkContentDetailClose.addEventListener('click', function (e) {
 			devToolTabsNetworkContentDetail.style.display = 'none';
+			devToolTabsNetworkContent.style.overflow = 'auto';
 		});
 		devToolTabsLogMenu.addEventListener('click', function (e) {
 			devToolTabsLogMenu.style.opacity = '1';
@@ -686,6 +687,7 @@
 				}
 
 				devToolNetworkDOM.addEventListener('click', function (e) {
+					devToolTabsNetworkContent.style.overflow = 'visible';
 					devToolTabsNetworkContentDetail.style.display = 'block';
 					devToolTabsNetworkContentDetailStartDt.innerText = timeFormat(devToolXHR.startDt);
 					devToolTabsNetworkContentDetailEndDt.innerText = timeFormat(devToolXHR.endDt);
